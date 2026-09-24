@@ -81,7 +81,7 @@ def _resolve_budget(state: dict) -> tuple[int, bool, list[str]]:
     if state["pr"] is None:
         return budget.BASE_ROUNDS, False, ["no PR linked yet, so no diff to size — base budget for now"]
     files, lines = github.pr_diff_stats(state["pr"])
-    hits = budget.sensitive_matches(github.pr_changed_paths(state["pr"]), sensitive_patterns())
+    hits = budget.sensitive_matches(github.pr_changed_paths(state["pr"], expected=files), sensitive_patterns())
     rounds, why = budget.auto_rounds(changed_files=files, changed_lines=lines, sensitive_hits=hits)
     return rounds, False, why
 

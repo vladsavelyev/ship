@@ -1,5 +1,7 @@
 """Tests for the GitHub layer helpers that have branching logic worth pinning."""
 
+import pytest
+
 from feature_workflow import github
 
 
@@ -122,3 +124,29 @@ def test_feature_issues_flattens_paginated_pages(monkeypatch):
 
     monkeypatch.setattr(github, "run", fake_run)
     assert [i["number"] for i in github.feature_issues()] == [1, 2]
+
+
+def test_pr_changed_paths_pages_the_files_listing(monkeypatch):
+    # `gh pr diff` 406s on any PR over 300 files; the REST listing must be paginated instead.
+    def fake_run(cmd, **kwargs):
+        if cmd[:3] == ["gh", "repo", "view"]:
+            return "acme\tnavari"
+        assert cmd[:3] == ["gh", "api", "repos/acme/navari/pulls/7/files?per_page=100"]
+        assert "--paginate" in cmd
+        return "a.py\nb/c.py\nd.md"
+
+    monkeypatch.setattr(github, "run", fake_run)
+    assert github.pr_changed_paths(7, expected=3) == ["a.py", "b/c.py", "d.md"]
+
+
+def test_pr_changed_paths_refuses_a_truncated_listing(monkeypatch):
+    # GitHub stops the listing at 3000 files without an error; a short list must crash, not
+    # quietly size the budget on the paths it happened to return.
+    def fake_run(cmd, **kwargs):
+        if cmd[:3] == ["gh", "repo", "view"]:
+            return "acme\tnavari"
+        return "a.py\nb.py"
+
+    monkeypatch.setattr(github, "run", fake_run)
+    with pytest.raises(RuntimeError, match="3 changed files but the files listing returned 2"):
+        github.pr_changed_paths(7, expected=3)

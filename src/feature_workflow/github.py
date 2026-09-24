@@ -213,13 +213,26 @@ def pr_diff_stats(number: int) -> tuple[int, int]:
     return int(files), int(lines)
 
 
-def pr_changed_paths(number: int) -> list[str]:
+def pr_changed_paths(number: int, *, expected: int) -> list[str]:
     """Repo-relative paths the PR touches — the sensitivity half of review-budget sizing.
 
-    Scoped by the PR's own base, like every other view of the diff in this workflow.
+    Scoped by the PR's own base, like every other view of the diff in this workflow. Uses the REST
+    files listing, not `gh pr diff --name-only`: the diff endpoint refuses any PR over 300 files
+    (HTTP 406), which crashed `status` and `review record` on large PRs. The listing pages up to
+    3000 files and then stops without an error, so the count is checked against `expected` (the
+    PR's `changedFiles`) — a budget sized on a partial path list would miss sensitive hits.
     """
-    out = run(["gh", "pr", "diff", str(number), "--name-only"])
-    return out.splitlines() if out else []
+    owner, name = _owner_repo()
+    out = run(
+        ["gh", "api", f"repos/{owner}/{name}/pulls/{number}/files?per_page=100", "--paginate", "--jq", ".[].filename"]
+    )
+    paths = out.splitlines() if out else []
+    if len(paths) != expected:
+        raise RuntimeError(
+            f"PR #{number} reports {expected} changed files but the files listing returned {len(paths)} "
+            f"(GitHub caps it at 3000); refusing to size the review budget on a partial path list."
+        )
+    return paths
 
 
 def add_label(number: int, label: str) -> None:
