@@ -1,0 +1,8 @@
+{
+  "name": "feature-workflow",
+  "description": "Feature branches with worktrees, PRs, issue-tracked review problems and a merge gate.",
+  "author": {
+    "name": "Vlad Savelyev"
+  },
+  "repository": "https://github.com/vladsavelyev/feature-workflow"
+}

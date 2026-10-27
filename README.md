@@ -28,10 +28,21 @@ what we tried and backed out of (read before making structural changes).
 
 ## Install
 
+This repo is a Claude Code plugin, listed in the
+[agent-skills](https://github.com/vladsavelyev/agent-skills) marketplace:
+
 ```sh
-uv tool install --editable .     # exposes the `feature` command globally
-# or, in a project:
-uv sync && uv run feature --help
+claude plugin install feature-workflow --marketplace vladsavelyev/agent-skills
+```
+
+The plugin ships the `ship` skill, the SessionStart hook, and the `feature` CLI. Its `bin/` is on
+the agent's PATH, and `bin/feature` runs the CLI from the plugin's own checkout via `uv run`, so
+the CLI always matches the skill it was shipped with.
+
+For `feature` in your own terminal:
+
+```sh
+uv tool install --editable .
 ```
 
 ## Prerequisites
@@ -133,33 +144,13 @@ out, which puts the reminder in front of the next session on that branch.
 
 ## SessionStart hook
 
-Wire the hook so every Claude session on a tracked branch gets its context injected. In your
-`.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "SessionStart": [
-      {"hooks": [{"type": "command", "command": "feature-session-context"}]}
-    ]
-  }
-}
-```
-
-(or `uv run python -m feature_workflow.session_start_hook`).
+The plugin's `hooks/hooks.json` runs `feature-session-context` at session start, so every Claude
+session on a tracked branch gets its context injected.
 
 ## Claude skill
 
-`skills/ship/SKILL.md` teaches Claude Code how to drive this CLI. It's tracked here
-(source of truth) and made live by symlinking it into your Claude skills dir — no copying, edits
-apply instantly:
-
-```sh
-ln -s "$PWD/skills/ship" ~/.claude/skills/ship
-```
-
-Claude discovers it on the next session. Keep it in sync with the CLI: when you add or change a
-command, update the SKILL.md in the same commit.
+`skills/ship/SKILL.md` teaches Claude Code how to drive this CLI. Keep it in sync with the CLI:
+when you add or change a command, update the SKILL.md in the same commit.
 
 ## Development
 
@@ -167,4 +158,5 @@ command, update the SKILL.md in the same commit.
 uv sync
 uv run pytest        # unit tests (state block, gate, review/verify schemas)
 uv run ruff check .
+claude --plugin-dir .   # a session running this checkout's plugin instead of the installed one
 ```

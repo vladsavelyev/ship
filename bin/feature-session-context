@@ -1,0 +1,3 @@
+#!/bin/sh
+# Run the CLI from this plugin's own checkout, so it always matches the skill shipped beside it.
+exec uv run --quiet --frozen --no-dev --project "$(dirname "$0")/.." feature-session-context "$@"
