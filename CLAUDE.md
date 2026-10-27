@@ -5,9 +5,11 @@
 This repo was moved out of the `azu-oncology-rd` org (that copy is **archived and read-only**)
 to the personal repo **`vladsavelyev/feature-workflow`**. To push:
 
-1. Switch `gh` to the personal account (the default active account may be the org one):
+1. Run each `gh`/`git push` as the personal account, per command. Don't `gh auth switch`: the
+   active account is machine-wide and other sessions rely on the work one.
    ```
-   gh auth switch --user vladsavelyev
+   GH_TOKEN=$(gh auth token --user vladsavelyev) git push
+   GH_TOKEN=$(gh auth token --user vladsavelyev) gh pr create ...
    ```
 2. Make sure `origin` points at the moved repo (not the old archived org URL):
    ```
