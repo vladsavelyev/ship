@@ -1,4 +1,4 @@
-# feature-workflow
+# ship
 
 A CLI + SessionStart hook for running multiple Claude features in parallel: each feature gets
 a branch, a worktree, a PR, and a GitHub tracking issue. Features can be **stacked** on each
@@ -29,10 +29,11 @@ what we tried and backed out of (read before making structural changes).
 ## Install
 
 This repo is a Claude Code plugin, listed in the
-[agent-skills](https://github.com/vladsavelyev/agent-skills) marketplace:
+[vlad-skills](https://github.com/vladsavelyev/skills) marketplace:
 
 ```sh
-claude plugin install feature-workflow --marketplace vladsavelyev/agent-skills
+claude plugin marketplace add vladsavelyev/skills
+claude plugin install ship@vlad-skills
 ```
 
 The plugin ships the `ship` skill, the SessionStart hook, and the `feature` CLI. Its `bin/` is on

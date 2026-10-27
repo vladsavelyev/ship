@@ -1,9 +1,9 @@
-# feature-workflow
+# ship
 
 ## Pushing to the remote
 
 This repo was moved out of the `azu-oncology-rd` org (that copy is **archived and read-only**)
-to the personal repo **`vladsavelyev/feature-workflow`**. To push:
+to the personal repo **`vladsavelyev/ship`** (formerly `feature-workflow`). To push:
 
 1. Run each `gh`/`git push` as the personal account, per command. Don't `gh auth switch`: the
    active account is machine-wide and other sessions rely on the work one.
@@ -13,7 +13,7 @@ to the personal repo **`vladsavelyev/feature-workflow`**. To push:
    ```
 2. Make sure `origin` points at the moved repo (not the old archived org URL):
    ```
-   git remote set-url origin https://github.com/vladsavelyev/feature-workflow.git
+   git remote set-url origin https://github.com/vladsavelyev/ship.git
    ```
 
 If a push is rejected as non-fast-forward, the moved repo's history was squash-scrubbed on

@@ -1,8 +1,8 @@
 {
-  "name": "feature-workflow",
+  "name": "ship",
   "description": "Feature branches with worktrees, PRs, issue-tracked review problems and a merge gate.",
   "author": {
     "name": "Vlad Savelyev"
   },
-  "repository": "https://github.com/vladsavelyev/feature-workflow"
+  "repository": "https://github.com/vladsavelyev/ship"
 }

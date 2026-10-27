@@ -1,6 +1,6 @@
 # Motivation & design history
 
-This records *why* feature-workflow is shaped the way it is — the decisions, the dead ends, and
+This records *why* ship is shaped the way it is — the decisions, the dead ends, and
 the course-corrections from the session that built it. `design.md` describes the system as it
 stands; this file explains how it got there and what we deliberately rejected. Read it before
 making a structural change, so you don't reintroduce something we already backed out of.

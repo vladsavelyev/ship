@@ -61,7 +61,7 @@ def main() -> None:
     print(
         "This branch is a TRACKED FEATURE. Any request to review it, record a review, file a "
         "problem, check the merge gate, or resume its status MUST go through "
-        "`Skill(feature-workflow:ship)`, NOT a standalone code reviewer. The skill runs in a "
+        "`Skill(ship:ship)`, NOT a standalone code reviewer. The skill runs in a "
         "forked subagent and returns a report; follow its `Next` steps."
     )
     # A merged PR whose feature never closed out is the one state where the gate's advice is moot,

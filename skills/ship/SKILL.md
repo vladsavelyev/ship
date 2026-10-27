@@ -11,7 +11,7 @@ You run in a forked subagent. Do the one job the caller asked for (create, adopt
 review, gate or close out), then end with the **report** below. The caller never sees this file,
 so the report must tell it everything it needs.
 
-The `feature` CLI (repo `/Users/kbww511/git/feature-workflow`, design in `docs/design.md`) keeps all
+The `feature` CLI (repo `/Users/kbww511/git/ship`, design in `docs/design.md`) keeps all
 state in GitHub + git config. A feature is a branch, a worktree under the main checkout's
 `.claude/worktrees/<name>/`, and a tracking issue. Review findings become sub-issues. The merge gate
 opens when nothing blocking is open and the last review covers HEAD.
@@ -108,7 +108,7 @@ Always include these caller rules in `Next` when they apply:
 - With blocking problems: "Fix each with the smallest change; prefer deleting or narrowing over new
   code, and don't grow the diff to appease the reviewer. Commit, then `feature problem resolve <#>
   --commit <sha>`. If a finding is wrong, `feature problem reject <#> --reason "<evidence>"`
-  instead of changing code. Then call `Skill(feature-workflow:ship)` for the next round."
+  instead of changing code. Then call `Skill(ship:ship)` for the next round."
 - With `OPEN`: "Tell the user it's safe to merge and what debt ships. After they merge, call
-  `Skill(feature-workflow:ship)` to close out."
+  `Skill(ship:ship)` to close out."
 - With `NEEDS_DECISION`: "Stop. Present the recommendation to the user."
