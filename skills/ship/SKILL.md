@@ -108,7 +108,7 @@ Always include these caller rules in `Next` when they apply:
 - With blocking problems: "Fix each with the smallest change; prefer deleting or narrowing over new
   code, and don't grow the diff to appease the reviewer. Commit, then `feature problem resolve <#>
   --commit <sha>`. If a finding is wrong, `feature problem reject <#> --reason "<evidence>"`
-  instead of changing code. Then call `Skill(ship)` for the next round."
+  instead of changing code. Then call `Skill(feature-workflow:ship)` for the next round."
 - With `OPEN`: "Tell the user it's safe to merge and what debt ships. After they merge, call
-  `Skill(ship)` to close out."
+  `Skill(feature-workflow:ship)` to close out."
 - With `NEEDS_DECISION`: "Stop. Present the recommendation to the user."
