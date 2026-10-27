@@ -1,16 +1,7 @@
 #!/usr/bin/env python3
 """SessionStart hook: inject feature context for the current branch into the session.
 
-Wire it in .claude/settings.json:
-
-  "hooks": {
-    "SessionStart": [
-      {"hooks": [{"type": "command",
-        "command": "uv run python -m feature_workflow.session_start_hook"}]}
-    ]
-  }
-
-The hook prints a short context block to stdout (which Claude Code injects into context).
+The plugin wires it in hooks/hooks.json. The hook prints a short context block to stdout (which Claude Code injects into context).
 If the branch isn't a tracked feature, it prints nothing and exits 0 — a non-feature branch
 is a normal case, not an error.
 """
