@@ -150,12 +150,12 @@ Wire the hook so every Claude session on a tracked branch gets its context injec
 
 ## Claude skill
 
-`skills/feature-workflow/SKILL.md` teaches Claude Code how to drive this CLI. It's tracked here
+`skills/ship/SKILL.md` teaches Claude Code how to drive this CLI. It's tracked here
 (source of truth) and made live by symlinking it into your Claude skills dir — no copying, edits
 apply instantly:
 
 ```sh
-ln -s "$PWD/skills/feature-workflow" ~/.claude/skills/feature-workflow
+ln -s "$PWD/skills/ship" ~/.claude/skills/ship
 ```
 
 Claude discovers it on the next session. Keep it in sync with the CLI: when you add or change a
