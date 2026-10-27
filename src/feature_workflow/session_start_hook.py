@@ -61,8 +61,8 @@ def main() -> None:
     print(
         "This branch is a TRACKED FEATURE. Any request to review it, record a review, file a "
         "problem, check the merge gate, or resume its status MUST go through the "
-        "`feature-workflow` skill — invoke `Skill(feature-workflow)` and follow it. In "
-        "particular, 'run a review' / 'review this' means the feature-workflow review flow "
+        "`ship` skill — invoke `Skill(feature-workflow:ship)` and follow it. In "
+        "particular, 'run a review' / 'review this' means the ship review flow "
         "(finder subagent → dedup → `feature problem add` → `feature review record`), NOT a "
         "standalone code reviewer and NOT a search for a project-local `code-review` skill."
     )

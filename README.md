@@ -39,7 +39,8 @@ The plugin ships the `ship` skill, the SessionStart hook, and the `feature` CLI.
 the agent's PATH, and `bin/feature` runs the CLI from the plugin's own checkout via `uv run`, so
 the CLI always matches the skill it was shipped with.
 
-For `feature` in your own terminal:
+For `feature` in your own terminal (Claude Code appends plugin `bin/` dirs to PATH, so in agent
+sessions this install takes precedence over the plugin's):
 
 ```sh
 uv tool install --editable .
