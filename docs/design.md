@@ -193,7 +193,7 @@ earlier, all still claiming `in-review`. A step that depends on remembering, at 
 attention has moved on, is not a mechanism.
 
 So the linkage is now GitHub-native and self-firing: `feature pr` writes `Closes #<issue>` into the
-PR body (marked with an invisible `<!-- feature-workflow -->` comment so it can never be confused
+PR body (marked with an invisible `<!-- ship -->` comment (PRs linked before the rename carry `<!-- feature-workflow -->`, which is still recognised) so it can never be confused
 with the PR's own hand-written `Closes #<problem>` lines, which re-linking must not disturb), and
 merging closes the tracking issue with nobody in the loop. The original design chose a non-closing
 `Part of #<issue>` deliberately — the umbrella issue outlives the PR, and its problem sub-issues can
@@ -279,29 +279,29 @@ All commands are `feature <cmd>` (or the `feature` console script).
 
 ## The in-session review
 
-The review runs **inside the agent's own Claude Code session's process**, not as a spawned
-`claude` subprocess. But the *finder* runs in a fresh subagent (a sub-task of this process), and
-the parent session does dedup + recording. The split matters:
+Each review round is one call of the `ship` skill, which runs as a forked subagent
+(`context: fork`) inside the agent's own Claude Code process, not as a spawned `claude`
+subprocess. The caller never loads the skill's instructions; it gets back a short report with the
+gate verdict and its next steps (fix, resolve, call the skill again). A fresh fork per round is
+what keeps the finder blind:
 
 ```
-agent session ─▶ spawn finder SUBAGENT (PR# only — NO tracked state loaded yet)
-                    │                    │
-                    │            Skill(review, <PR#>) ─▶ raw findings returned to parent
-                    ▼
-   parent NOW loads tracked state, and for each finding decides (real code + open problems):
+caller ─▶ Skill(ship:ship) ─▶ forked subagent, fresh context
+   1. track the PR: worktree for its branch; `feature adopt` if untracked (links the open PR,
+      takes the PR's base as the parent)
+   2. Skill(code-review, "high <PR#>") ─▶ raw findings   (NO tracked state loaded yet)
+   3. NOW load tracked state, and for each finding decide (real code + problems):
        ├─ reproducible?      no ─▶ drop (false positive)
        ├─ caused by THIS PR? no ─▶ sev:low, or file + `problem defer` (never blocking)
        └─ duplicate of a tracked problem? (judged by MEANING)
-              ├─ matches an OPEN issue   ─▶ skip (already tracked)
-              ├─ matches a CLOSED issue  ─▶ REGRESSION: `gh issue reopen` + count it
-              └─ distinct                ─▶ `feature problem add --sev high|med|low`
-                    │
-   `feature review record --new-blocking <high+med filed & regressed> --new-low <n>
-                          --regressions <blocking reopened>`   (refuses if no PR linked;
-                          idempotent per sha, so a retry after a failed call spends no extra round)
-                    │
-                    ▼
-   prints the verdict: OPEN (ship) / REVIEW_AGAIN (one more round) / NEEDS_DECISION (escalate)
+              ├─ matches an OPEN issue      ─▶ skip (already tracked)
+              ├─ matches a CLOSED fixed one ─▶ REGRESSION: `problem block` + count it
+              ├─ matches a REJECTED one     ─▶ skip, unless the repro answers the rejection
+              └─ distinct                   ─▶ `feature problem add --sev high|med|low`
+   4. `feature review record --new-blocking <high+med filed & regressed> --new-low <n>
+                             --regressions <blocking reopened>`   (refuses if no PR linked;
+                             idempotent per sha, so a retry after a failed call spends no extra round)
+   5. report ─▶ caller: verdict OPEN (ship) / REVIEW_AGAIN (fix, call again) / NEEDS_DECISION (escalate)
 ```
 
 **Why scope the review through the PR.** The finder is handed the **PR number**, not a diff
@@ -320,7 +320,7 @@ not an afterthought.
 **Why the finder runs before tracked state is loaded.** The finder must find blind — no memory of
 prior runs, no list of already-filed problems to "just confirm." Rather than load that state and
 then instruct the agent not to pass it along (a rule it must remember to honor every run), the
-ordering enforces it structurally: the parent spawns the finder FIRST, with only the PR number in
+ordering enforces it structurally: the fork runs the finder FIRST, with only the PR number in
 hand, and loads `feature status` / open problems only afterward for its own dedup. There is
 nothing to leak because the leakable context doesn't exist yet.
 
@@ -329,17 +329,17 @@ checkout (`.claude/worktrees/<name>`), so the main checkout's path is a prefix o
 path and holds the same files on a *different* branch (the base). A finder that drifts to "the
 repo root" — a stray `cd`, a glob from the wrong cwd — ends up reading the pre-feature code while
 the PR diff is from the feature branch, producing phantom findings and missing real ones. The
-finder subagent is therefore told its working directory is the feature worktree and that it must
-never read from the main checkout. `feature status` surfaces the worktree path (`git worktree
-list` → the entry whose `branch` is this feature's) so the parent can hand it over explicitly.
+fork therefore `cd`s into the feature worktree first and never reads from the main checkout.
+`feature status` surfaces the worktree path (`git worktree list` → the entry whose `branch` is
+this feature's).
 
 **Why the finder runs in a fresh subagent.** The gate's safety property is that the *final*
-review is a genuine independent sweep. If the finder ran in the parent's own context, the second
+review is a genuine independent sweep. If the finder ran in the caller's own context, the second
 and later runs in a session would be poisoned: the agent remembers the earlier runs, so instead
 of rediscovering issues blind it drifts into "confirm #12 and #14 got fixed" — a verification
-mindset that misses bugs the fixes themselves introduced. A subagent gets a clean context every
-run, so run 1 and run 5 find with equal rigor. Splitting find (blind subagent) from dedup
-(parent, which needs the tracked problem list) gives each half the context it needs.
+mindset that misses bugs the fixes themselves introduced. Each round is a new fork with a clean
+context, so run 1 and run 5 find with equal rigor. The caller, which fixes the problems, never
+sees the skill's instructions or the raw findings, only the report.
 
 **Why a subagent, not a headless `claude`.** An earlier design spawned `claude -p "/code-review"`
 as a *subprocess* and forced its findings into a JSON schema. That second, long-lived `claude`

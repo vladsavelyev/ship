@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Start, stack, adopt, resume or review a tracked feature branch and check its merge gate. Use for any review request on a tracked branch.
+description: Start, stack, adopt, resume or review a feature branch and check its merge gate. Use for any request to review a PR or branch; an untracked one gets tracked first.
 context: fork
 background: false
 ---
@@ -41,22 +41,20 @@ reading or running there gives wrong answers. `cd` to the worktree (`feature sta
 
 ## Review round
 
-1. **PR against the parent.** The PR must target the parent branch (`main` for a top-level feature,
-   the branch below for a stacked one) and be linked with `feature pr <n>`. If either is missing,
-   don't review. Report what the caller must do.
-2. **Find blind, before loading any tracked state.** Run `Skill(review, <PR#>)` with this brief:
-   ```
-   Review only. Do not edit, commit, push, or comment on the PR.
-   Worktree: <abs path>. Read code only there.
-   Find bugs, broken callers, and mismatches with the PR's intent. Skip style unless it hides a bug.
-   Flag code, tests or guards the intent doesn't need. Other paths, rare cases, small perf: low.
-   high = data loss, security hole, crash, or silently wrong result on a realistic path.
-   med = real bug on a narrower path. low = everything else.
-   Each finding: [high|med|low] <file>:<line> <claim>. Repro: <input/state>. Fix: <smallest fix>.
-   ```
+1. **Track the PR.** Take the PR the caller named, else the current branch's open PR
+   (`gh pr view --json number,headRefName,baseRefName`). No PR → don't review; report that the
+   caller must open one against the parent branch. Make sure its branch has a worktree (`git
+   worktree list`; else `git worktree add .claude/worktrees/<branch> <branch>` from the main
+   checkout) and `cd` there. If `feature status` says the branch isn't tracked, run `feature adopt`
+   (add `--init-labels` if the repo lacks the labels). It links the open PR and takes the PR's base
+   as the parent.
+2. **Find blind, before loading any tracked state.** Run `Skill(code-review, "high <PR#>")`, with
+   no `--comment` or `--fix`.
 3. **Now load state**: `feature problem list --open`, plus closed problems for regression checks.
 4. **Verify and dedup each finding** against the real code:
    - Can't reproduce it concretely → drop it.
+   - Outside the PR's intent (other paths, rare cases, small perf) → `low`. So is code, a test or
+     a guard the intent doesn't need.
    - Same meaning as an OPEN problem → skip.
    - Same as a CLOSED fixed problem → regression. `feature problem block <#> --reason
      "rediscovered: <repro>"`, and count it (if high/med) in `--new-blocking` and `--regressions`.
@@ -64,8 +62,10 @@ reading or running there gives wrong answers. `cd` to the worktree (`feature sta
    - Same as a REJECTED problem → skip, unless the new repro answers the rejection reason. Then
      `block` it. A problem disputed twice goes to the human: escalate with both sides.
    - Not caused by this PR → never blocking. File it `--sev low`, or defer it.
-   - Re-judge severity yourself, whatever label the finder gave. Only `low` is non-blocking, and
-     an unlabelled problem blocks, so always pass `--sev`.
+   - Re-judge severity yourself, whatever label the finder gave: `high` = data loss, security
+     hole, crash, or silently wrong result on a realistic path; `med` = real bug on a narrower
+     path; `low` = everything else. Only `low` is non-blocking, and an unlabelled problem blocks,
+     so always pass `--sev`.
 5. **File new ones**: `feature problem add --title "…" --sev … --body-file - <<'EOF' … EOF`, with
    the repro, `file:line` and the suggested smallest fix.
 6. **Record**: `feature review record --sha $(git rev-parse HEAD) …`. Write `--summary` as a real

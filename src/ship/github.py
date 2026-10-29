@@ -93,15 +93,21 @@ def open_pr_for_branch(branch: str) -> int | None:
     return int(out) if out else None
 
 
+def pr_base(pr: int) -> str:
+    """The branch a PR merges into."""
+    return run(["gh", "pr", "view", str(pr), "--json", "baseRefName", "--jq", ".baseRefName"])
+
+
 # The marker makes the line unmistakably *ours*. A PR body legitimately carries hand-written
 # closing references to the problem sub-issues it fixes ("Closes #2173, #2174"), and one of those
 # can be a lone `Closes #2173` on its own line — indistinguishable from the feature reference
 # without this, so re-linking would strip it and silently stop that problem from auto-closing.
 # Invisible when rendered, and GitHub still parses the keyword reference that precedes it.
-_REF_MARK = "<!-- feature-workflow -->"
-# Our own reference line, in either form: the current closing one, or the non-closing `Part of #…`
-# that PRs opened before this changed still carry (upgraded in place on the next link).
-_FEATURE_REF_RE = re.compile(rf"(?mi)^(?:Closes #\d+ {re.escape(_REF_MARK)}|Part of #\d+)\s*$")
+_REF_MARK = "<!-- ship -->"
+# Our own reference line, in any form: the current one, the same line under the marker PRs carried
+# before the project was renamed from feature-workflow, or the non-closing `Part of #…` from before
+# the reference became a closing one. Each is upgraded in place on the next link.
+_FEATURE_REF_RE = re.compile(r"(?mi)^(?:Closes #\d+ <!-- (?:ship|feature-workflow) -->|Part of #\d+)\s*$")
 
 
 def feature_ref(issue: int) -> str:

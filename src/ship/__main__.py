@@ -166,18 +166,21 @@ def cmd_adopt(args: argparse.Namespace) -> None:
     if feature_issue(name) is not None:
         sys.exit(f"Branch '{name}' is already tracked (issue #{feature_issue(name)}).")
 
-    # An explicit --base is authoritative and must win everywhere, including the git-town
-    # parent pointer that status/gate read first. Without --base, fall back to the existing
-    # parent, else main. Only skip the write when the recorded parent already matches.
-    base = args.base or parent_branch(name) or "main"
-    if parent_branch(name) != base:
-        set_parent_branch(name, base)
-    issue = _open_feature_issue(name, base, args.title)
-
     # A branch adopted after its PR was opened should link that PR automatically — otherwise
     # the tracking issue sits at pr:null until someone remembers `feature pr`, and the PR has
     # no visible connection back to the feature. Mirror cmd_pr's state transition here.
     pr = github.open_pr_for_branch(name)
+
+    # An explicit --base is authoritative and must win everywhere, including the git-town
+    # parent pointer that status/gate read first. Without --base, fall back to the existing
+    # parent, then the PR's base (a branch never stacked with git-town has no parent, and
+    # assuming main would mis-scope a stacked PR's review), else main. Only skip the write when
+    # the recorded parent already matches.
+    base = args.base or parent_branch(name) or (github.pr_base(pr) if pr is not None else "main")
+    if parent_branch(name) != base:
+        set_parent_branch(name, base)
+    issue = _open_feature_issue(name, base, args.title)
+
     if pr is not None:
         _, state, body = _load_state(name)
         state["pr"] = pr
