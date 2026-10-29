@@ -176,7 +176,15 @@ def cmd_adopt(args: argparse.Namespace) -> None:
     # parent, then the PR's base (a branch never stacked with git-town has no parent, and
     # assuming main would mis-scope a stacked PR's review), else main. Only skip the write when
     # the recorded parent already matches.
-    base = args.base or parent_branch(name) or (github.pr_base_branch(pr) if pr is not None else "main")
+    pr_base = github.pr_base_branch(pr) if pr is not None else None
+    base = args.base or parent_branch(name) or pr_base or "main"
+    # A PR whose base isn't the parent is scoped against the wrong branch, and every `review record`
+    # would refuse it. Say so now, before an issue exists, rather than after the first review.
+    if pr_base is not None and pr_base != base:
+        sys.exit(
+            f"PR #{pr} targets '{pr_base}', but the parent of '{name}' is '{base}'. Retarget the PR "
+            f"(`gh pr edit {pr} --base {base}`) or adopt with `--base {pr_base}`."
+        )
     if parent_branch(name) != base:
         set_parent_branch(name, base)
     issue = _open_feature_issue(name, base, args.title)
@@ -859,7 +867,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     c = sub.add_parser("adopt", help="Wire an EXISTING branch into tracking (no new worktree)")
     c.add_argument("--branch", help="Branch to adopt (default: current)")
-    c.add_argument("--base", help="Base branch (default: git-town parent, else main)")
+    c.add_argument("--base", help="Base branch (default: git-town parent, else the open PR's base, else main)")
     c.add_argument("--title", help="Issue title (default: derived from branch name)")
     c.add_argument("--init-labels", action="store_true", help="Create workflow labels first")
     c.set_defaults(func=cmd_adopt)

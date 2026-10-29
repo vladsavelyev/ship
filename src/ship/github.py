@@ -102,6 +102,8 @@ _REF_MARK = "<!-- ship -->"
 # Our own reference line, in any form: the current one, the same line under the marker PRs carried
 # before the project was renamed from feature-workflow, or the non-closing `Part of #…` from before
 # the reference became a closing one. Each is upgraded in place on the next link.
+# The old forms are kept ON PURPOSE, not cruft: they are already written into PR bodies on GitHub,
+# and dropping one would make `feature pr` stack a second reference line instead of replacing it.
 _FEATURE_REF_RE = re.compile(r"(?mi)^(?:Closes #\d+ <!-- (?:ship|feature-workflow) -->|Part of #\d+)\s*$")
 
 
