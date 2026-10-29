@@ -8,7 +8,7 @@ a loop that won't converge ends in a recorded human decision rather than another
 A new Claude session on an existing branch reconstructs full context (base branch, last prompt,
 last review, blocking problems) from GitHub.
 
-> Status: alpha. The CLI lives in the `feature_workflow` package. See "CLI reference" below.
+> Status: alpha. The CLI lives in the `ship` package. See "CLI reference" below.
 > For *why* it's designed this way (and what we tried and rejected), see
 > [motivation.md](motivation.md).
 

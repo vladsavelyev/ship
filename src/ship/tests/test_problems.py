@@ -1,6 +1,6 @@
 """Tests for problem classification — what does and doesn't hold the merge gate."""
 
-from feature_workflow.problems import disposition, is_blocking, severity, triage
+from ship.problems import disposition, is_blocking, severity, triage
 
 
 def sub(number: int, *, sev: str = "sev:high", state: str = "OPEN", extra: list[str] | None = None) -> dict:

@@ -4,7 +4,7 @@ import subprocess
 
 import pytest
 
-from feature_workflow.shell import CommandFailed, run, try_run
+from ship.shell import CommandFailed, run, try_run
 
 
 def test_run_returns_stripped_stdout():

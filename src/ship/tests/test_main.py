@@ -2,10 +2,10 @@
 
 import pytest
 
-from feature_workflow import __main__ as cli
-from feature_workflow import github, problems
-from feature_workflow.shell import CommandFailed
-from feature_workflow.state import SCHEMA, new_state, render_block
+from ship import __main__ as cli
+from ship import github, problems
+from ship.shell import CommandFailed
+from ship.state import SCHEMA, new_state, render_block
 
 
 def _problem(number: int, sev: str, *, state: str = "OPEN", extra: tuple[str, ...] = ()) -> dict:

@@ -2,8 +2,8 @@
 
 import pytest
 
-from feature_workflow.gate import rounds_since_invalidation
-from feature_workflow.state import (
+from ship.gate import rounds_since_invalidation
+from ship.state import (
     BEGIN,
     END,
     SCHEMA,
