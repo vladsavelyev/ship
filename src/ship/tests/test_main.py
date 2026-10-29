@@ -103,3 +103,49 @@ def test_abandoned_note_never_claims_a_merge():
 def test_abandoned_note_is_short_when_there_is_nothing_left_open():
     note = cli._abandoned_note(123, problems.triage([_problem(9, "sev:med", state="CLOSED")]))
     assert "still\nopen" not in note and "still open" not in note
+
+
+def _stub_adopt(monkeypatch, *, parent: str | None, pr: int | None, pr_base: str | None) -> dict:
+    """Stub everything cmd_adopt touches; return what it did."""
+    did: dict = {"parent": [], "issue": None}
+    monkeypatch.setattr(cli, "feature_issue", lambda name: None)
+    monkeypatch.setattr(cli, "parent_branch", lambda name: parent)
+    monkeypatch.setattr(cli, "set_parent_branch", lambda name, base: did["parent"].append(base))
+
+    def open_issue(name, base, title):
+        did["issue"] = base
+        return 7
+
+    monkeypatch.setattr(cli, "_open_feature_issue", open_issue)
+    monkeypatch.setattr(cli, "_load_state", lambda name: (7, new_state(branch=name, base="x", updated="t"), ""))
+    monkeypatch.setattr(cli, "_save_state", lambda issue, body, state: None)
+    monkeypatch.setattr(github, "open_pr_for_branch", lambda name: pr)
+    monkeypatch.setattr(github, "pr_base_branch", lambda number: pr_base)
+    monkeypatch.setattr(github, "link_pr_to_feature", lambda number, issue: True)
+    monkeypatch.setattr(github, "comment", lambda issue, text: None)
+    return did
+
+
+def _adopt_args(base: str | None = None):
+    return cli.argparse.Namespace(branch="child", base=base, title=None, init_labels=False)
+
+
+def test_adopt_takes_the_pr_base_when_git_town_has_no_parent(monkeypatch):
+    # A branch never stacked with git-town: assuming main would scope a stacked PR's review wrong.
+    did = _stub_adopt(monkeypatch, parent=None, pr=25, pr_base="parent-x")
+    cli.cmd_adopt(_adopt_args())
+    assert did["parent"] == ["parent-x"]
+    assert did["issue"] == "parent-x"
+
+
+def test_adopt_refuses_a_pr_that_targets_another_branch_before_opening_an_issue(monkeypatch):
+    did = _stub_adopt(monkeypatch, parent="main", pr=25, pr_base="parent-x")
+    with pytest.raises(SystemExit, match="targets 'parent-x'"):
+        cli.cmd_adopt(_adopt_args())
+    assert did["issue"] is None
+
+
+def test_adopt_without_a_pr_or_parent_bases_on_main(monkeypatch):
+    did = _stub_adopt(monkeypatch, parent=None, pr=None, pr_base=None)
+    cli.cmd_adopt(_adopt_args())
+    assert did["parent"] == ["main"]

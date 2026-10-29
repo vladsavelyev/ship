@@ -48,7 +48,7 @@ reading or running there gives wrong answers. `cd` to the worktree (`feature sta
    `git worktree add --detach .claude/worktrees/<branch>` from the main checkout. Prefix every
    command with `cd <worktree> &&`, because the shell's cwd resets between calls.
    - Untracked branch (`feature status` says so): `feature adopt` (add `--init-labels` if the repo
-     lacks the labels). It links the open PR and takes the PR's base as the parent.
+     lacks the labels). It links the open PR and takes the PR's base as the parent, or refuses if the branch's git-town parent differs. Then report that.
    - Tracked branch with no PR linked: `feature pr <PR#>`.
    - The PR's base isn't the tracked parent: don't review. Report the mismatch.
 2. **Find blind, before loading any tracked state.** Run
