@@ -176,7 +176,7 @@ def cmd_adopt(args: argparse.Namespace) -> None:
     # parent, then the PR's base (a branch never stacked with git-town has no parent, and
     # assuming main would mis-scope a stacked PR's review), else main. Only skip the write when
     # the recorded parent already matches.
-    base = args.base or parent_branch(name) or (github.pr_base(pr) if pr is not None else "main")
+    base = args.base or parent_branch(name) or (github.pr_base_branch(pr) if pr is not None else "main")
     if parent_branch(name) != base:
         set_parent_branch(name, base)
     issue = _open_feature_issue(name, base, args.title)

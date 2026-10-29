@@ -93,11 +93,6 @@ def open_pr_for_branch(branch: str) -> int | None:
     return int(out) if out else None
 
 
-def pr_base(pr: int) -> str:
-    """The branch a PR merges into."""
-    return run(["gh", "pr", "view", str(pr), "--json", "baseRefName", "--jq", ".baseRefName"])
-
-
 # The marker makes the line unmistakably *ours*. A PR body legitimately carries hand-written
 # closing references to the problem sub-issues it fixes ("Closes #2173, #2174"), and one of those
 # can be a lone `Closes #2173` on its own line — indistinguishable from the feature reference

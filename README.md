@@ -61,6 +61,8 @@ chmod +x ~/.local/bin/feature
 - [`gh`](https://cli.github.com/) authenticated (`gh auth status`).
 - [`git-town`](https://www.git-town.com/) installed (`brew install git-town`) — needed for
   restacking stacked branches. Base-branch tracking works without it.
+- [`jq`](https://jqlang.org/), for the terminal `feature` wrapper above. It assumes one user-scope
+  install of the plugin.
 - Optional, per repo: declare the paths where review mistakes are expensive, so a PR touching
   them earns an extra review round:
   ```sh

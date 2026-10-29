@@ -43,13 +43,17 @@ reading or running there gives wrong answers. `cd` to the worktree (`feature sta
 
 1. **Track the PR.** Take the PR the caller named, else the current branch's open PR
    (`gh pr view --json number,headRefName,baseRefName`). No PR → don't review; report that the
-   caller must open one against the parent branch. Make sure its branch has a worktree (`git
-   worktree list`; else `git worktree add .claude/worktrees/<branch> <branch>` from the main
-   checkout) and `cd` there. If `feature status` says the branch isn't tracked, run `feature adopt`
-   (add `--init-labels` if the repo lacks the labels). It links the open PR and takes the PR's base
-   as the parent.
-2. **Find blind, before loading any tracked state.** Run `Skill(code-review, "high <PR#>")`, with
-   no `--comment` or `--fix`.
+   caller must open one against the parent branch. The **worktree** is the checkout that has its
+   branch (`git worktree list`). If none has it, run `gh pr checkout <PR#>` inside a new
+   `git worktree add --detach .claude/worktrees/<branch>` from the main checkout. Prefix every
+   command with `cd <worktree> &&`, because the shell's cwd resets between calls.
+   - Untracked branch (`feature status` says so): `feature adopt` (add `--init-labels` if the repo
+     lacks the labels). It links the open PR and takes the PR's base as the parent.
+   - Tracked branch with no PR linked: `feature pr <PR#>`.
+   - The PR's base isn't the tracked parent: don't review. Report the mismatch.
+2. **Find blind, before loading any tracked state.** Run
+   `Skill(code-review, "high <PR#>. Read code only under <worktree abs path>, never the main checkout or another worktree.")`,
+   with no `--comment` or `--fix`.
 3. **Now load state**: `feature problem list --open`, plus closed problems for regression checks.
 4. **Verify and dedup each finding** against the real code:
    - Can't reproduce it concretely → drop it.

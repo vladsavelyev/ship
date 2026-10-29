@@ -288,8 +288,10 @@ what keeps the finder blind:
 ```
 caller ─▶ Skill(ship:ship) ─▶ forked subagent, fresh context
    1. track the PR: worktree for its branch; `feature adopt` if untracked (links the open PR,
-      takes the PR's base as the parent)
-   2. Skill(code-review, "high <PR#>") ─▶ raw findings   (NO tracked state loaded yet)
+      takes the PR's base as the parent), `feature pr` if tracked but unlinked; stop if the
+      PR's base isn't the tracked parent
+   2. Skill(code-review, "high <PR#>, read only under <worktree>") ─▶ raw findings
+      (NO tracked state loaded yet)
    3. NOW load tracked state, and for each finding decide (real code + problems):
        ├─ reproducible?      no ─▶ drop (false positive)
        ├─ caused by THIS PR? no ─▶ sev:low, or file + `problem defer` (never blocking)
@@ -329,7 +331,9 @@ checkout (`.claude/worktrees/<name>`), so the main checkout's path is a prefix o
 path and holds the same files on a *different* branch (the base). A finder that drifts to "the
 repo root" — a stray `cd`, a glob from the wrong cwd — ends up reading the pre-feature code while
 the PR diff is from the feature branch, producing phantom findings and missing real ones. The
-fork therefore `cd`s into the feature worktree first and never reads from the main checkout.
+fork therefore runs every command in the feature worktree, and hands the finder that absolute
+path with the instruction to read code only there: a `cd` in the fork's shell doesn't carry into
+the finder, which starts in the session's primary directory.
 `feature status` surfaces the worktree path (`git worktree list` → the entry whose `branch` is
 this feature's).
 
