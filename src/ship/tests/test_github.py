@@ -2,7 +2,7 @@
 
 import pytest
 
-from feature_workflow import github
+from ship import github
 
 
 def test_open_pr_for_branch_returns_number_when_present(monkeypatch):

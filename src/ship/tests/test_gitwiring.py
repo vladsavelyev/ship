@@ -1,6 +1,6 @@
 """Tests for git wiring helpers with branching logic worth pinning."""
 
-from feature_workflow import gitwiring
+from ship import gitwiring
 
 
 def test_local_only_commits_empty_when_no_upstream(monkeypatch):

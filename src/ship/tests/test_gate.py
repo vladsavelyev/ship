@@ -1,6 +1,6 @@
 """Tests for the merge-gate decision logic — the tri-state verdict, coverage, and churn signals."""
 
-from feature_workflow.gate import EXIT_CODES, Verdict, churn_reason, covers_head, evaluate, rounds_since_invalidation
+from ship.gate import EXIT_CODES, Verdict, churn_reason, covers_head, evaluate, rounds_since_invalidation
 
 HEAD = "head99"
 

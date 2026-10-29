@@ -1,6 +1,6 @@
 """Tests for review-budget sizing."""
 
-from feature_workflow.budget import BASE_ROUNDS, MAX_ROUNDS, auto_rounds, sensitive_matches
+from ship.budget import BASE_ROUNDS, MAX_ROUNDS, auto_rounds, sensitive_matches
 
 
 def test_small_diff_gets_the_base_budget():

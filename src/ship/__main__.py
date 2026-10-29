@@ -1,7 +1,7 @@
 """feature — parallel feature workflow CLI.
 
 Usage:
-    uv run python -m feature_workflow <command> [options]
+    uv run python -m ship <command> [options]
 
 See docs/design.md for the design and full command reference.
 """
