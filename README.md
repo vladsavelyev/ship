@@ -40,11 +40,20 @@ The plugin ships the `ship` skill, the SessionStart hook, and the `feature` CLI.
 the agent's PATH, and `bin/feature` runs the CLI from the plugin's own checkout via `uv run`, so
 the CLI always matches the skill it was shipped with.
 
-For `feature` in your own terminal (Claude Code appends plugin `bin/` dirs to PATH, so in agent
-sessions this install takes precedence over the plugin's):
+For `feature` in your own terminal, put a wrapper on your PATH that runs the installed plugin's
+CLI, so the terminal and agent sessions always run the same version. Don't `uv tool install` a
+checkout: Claude Code appends plugin `bin/` dirs to PATH, so that install would shadow the
+plugin's CLI in agent sessions too.
 
 ```sh
-uv tool install --editable .
+cat > ~/.local/bin/feature <<'SH'
+#!/bin/sh
+set -eu
+root=$(jq -er '.plugins["ship@vlad-skills"][] | select(.scope == "user") | .installPath' \
+  "$HOME/.claude/plugins/installed_plugins.json")
+exec "$root/bin/feature" "$@"
+SH
+chmod +x ~/.local/bin/feature
 ```
 
 ## Prerequisites
