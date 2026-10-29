@@ -68,6 +68,14 @@ def test_link_pr_upgrades_the_old_non_closing_reference(monkeypatch):
     assert "Part of" not in captured["body"]
 
 
+def test_link_pr_upgrades_the_pre_rename_marker(monkeypatch):
+    # PRs linked before the rename from feature-workflow carry the old marker; it is still ours, so
+    # linking again replaces that line instead of leaving two closing references behind.
+    captured = _fake_pr_body_editor(monkeypatch, "Desc.\n\nCloses #1981 <!-- feature-workflow -->\n")
+    assert github.link_pr_to_feature(1910, 1964) is True
+    assert captured["body"] == f"Desc.\n\n{REF}\n"
+
+
 def test_link_pr_leaves_hand_written_problem_closures_alone(monkeypatch):
     # The whole point of the marker: a PR body's own `Closes #<problem>` lines — including a lone
     # one on its own line — must survive re-linking, or re-running `feature pr` would silently stop
